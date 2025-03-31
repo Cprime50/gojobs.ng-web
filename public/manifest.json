@@ -1,0 +1,22 @@
+{
+  "name": "Go9jaJobs - Golang Jobs in Nigeria",
+  "short_name": "Go9jaJobs",
+  "description": "Find the best Golang developer opportunities in Nigeria",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+} 
