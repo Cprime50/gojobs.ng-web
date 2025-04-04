@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Job } from '../../types/job';
 import { GetServerSideProps } from 'next';
 import { fetchJobsFromAPI } from '../../utils/api';
+import { formatJobDescription } from '../../utils/formatJobDescription';
 
 interface JobDetailsProps {
   job: Job | null;
@@ -189,20 +190,16 @@ export default function JobDetails({ job }: JobDetailsProps) {
                 </div>
               </div>
               
-              <div className="mt-8 border-t pt-8">
+              <div className="mt-8 border-t pt-6">
                 <h2 className="text-lg font-semibold text-gray-900">Job Description</h2>
-                <div className="mt-4 prose prose-blue max-w-none">
-                  <h3>Job Description</h3>
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: job.description
-                      // Convert newlines to <br> tags
-                      .replace(/\n/g, '<br>')
-                      // Make URLs clickable
-                      .replace(
-                        /(https?:\/\/[^\s]+)/g, 
-                        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>'
-                      )
-                  }} />
+                <div className="mt-3 prose prose-blue max-w-none bg-white p-4 rounded-md shadow-sm border border-gray-100">
+                  {job.description ? (
+                    <div className="job-description">
+                      {formatJobDescription(job.description)}
+                    </div>
+                  ) : (
+                    <p>No description available for this job.</p>
+                  )}
                 </div>
               </div>
               

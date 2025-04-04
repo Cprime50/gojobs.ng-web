@@ -4,32 +4,39 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Slightly dimmer background for light mode */
+    --background: 0 0% 98%;
+    /* Darker foreground text for better contrast */
+    --foreground: 222.2 84% 2.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 98%;
+    --card-foreground: 222.2 84% 2.9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 222.2 84% 2.9%;
 
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Slightly dimmer secondary background */
+    --secondary: 210 40% 94.1%;
+    --secondary-foreground: 222.2 47.4% 9.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Slightly dimmer muted background */
+    --muted: 210 40% 94.1%;
+    /* Darker muted text for better readability */
+    --muted-foreground: 215.4 16.3% 36.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Slightly dimmer accent background */
+    --accent: 210 40% 94.1%;
+    --accent-foreground: 222.2 47.4% 9.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    /* Slightly darker border */
+    --border: 214.3 31.8% 86.4%;
+    --input: 214.3 31.8% 86.4%;
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
@@ -71,6 +78,20 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Slightly smaller base font size for better readability */
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  /* Improve text readability in light mode */
+  p, li, span, div {
+    @apply text-foreground;
+  }
+  
+  /* Make headings slightly smaller but maintain contrast */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium;
+    line-height: 1.4;
   }
 }
 
@@ -108,6 +129,10 @@
   }
   
   .card {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300;
+    /* Slightly dimmer card background in light mode */
+    @apply bg-white/95 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300;
   }
-} 
+}
+
+/* Import job description styles */
+@import './job-description.css';

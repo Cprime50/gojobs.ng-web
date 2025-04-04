@@ -25,6 +25,7 @@ export default function Home() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [locationFilter, setLocationFilter] = useState("")
   const [jobTypeFilter, setJobTypeFilter] = useState("")
+  const [companyFilter, setCompanyFilter] = useState("")
   const [activeFilter, setActiveFilter] = useState<'new' | 'remote'>('new')
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
   const [isUsingCache, setIsUsingCache] = useState(false)
@@ -45,8 +46,9 @@ export default function Home() {
       const matchesLocation = locationFilter ? job.location === locationFilter : true;
       const matchesJobType = jobTypeFilter ? job.job_type === jobTypeFilter : true;
       const matchesRemote = activeFilter === 'remote' ? job.is_remote : true;
+      const matchesCompany = companyFilter ? job.company === companyFilter : true;
       
-      return matchesLocation && matchesJobType && (activeFilter === 'remote' ? matchesRemote : true);
+      return matchesLocation && matchesJobType && matchesCompany && (activeFilter === 'remote' ? matchesRemote : true);
     });
   };
 
@@ -67,6 +69,7 @@ export default function Home() {
     url.searchParams.delete('filter');
     url.searchParams.delete('location');
     url.searchParams.delete('jobType');
+    url.searchParams.delete('company');
     
     // Add new parameters if they have values
     if (activeFilter !== 'new') {
@@ -79,6 +82,10 @@ export default function Home() {
     
     if (jobTypeFilter) {
       url.searchParams.set('jobType', jobTypeFilter);
+    }
+    
+    if (companyFilter) {
+      url.searchParams.set('company', companyFilter);
     }
     
     // Update the URL without reloading the page
@@ -158,6 +165,12 @@ export default function Home() {
       if (jobTypeParam) {
         setJobTypeFilter(jobTypeParam);
       }
+      
+      // Get company from URL
+      const companyParam = params.get('company');
+      if (companyParam) {
+        setCompanyFilter(companyParam);
+      }
     }
     
     console.log('Performing initial data fetch');
@@ -170,11 +183,12 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       updateUrlWithFilters();
     }
-  }, [activeFilter, locationFilter, jobTypeFilter]);
+  }, [activeFilter, locationFilter, jobTypeFilter, companyFilter]);
 
   // Extract unique locations and job types for filters
   const locations = extractUniqueValues(jobs, 'location');
   const jobTypes = extractUniqueValues(jobs, 'job_type');
+  const companies = extractUniqueValues(jobs, 'company');
 
   // Apply filters and sorting
   const filteredJobs = applyFilters(jobs);
@@ -321,11 +335,31 @@ export default function Home() {
               </select>
             </div>
             
-            {(locationFilter || jobTypeFilter) && (
+            <div className="mb-4">
+              <h3 className="text-sm font-medium mb-2 flex items-center">
+                <Building className="w-4 h-4 mr-1" />
+                Company
+              </h3>
+              <select
+                value={companyFilter}
+                onChange={(e) => setCompanyFilter(e.target.value)}
+                className="w-full bg-background border border-border rounded-md p-2 text-sm hover:border-green-700 focus:border-green-700 focus:ring-1 focus:ring-green-700 focus:outline-none"
+              >
+                <option value="">All Companies</option>
+                {companies.map((company) => (
+                  <option key={company} value={company}>
+                    {company}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {(locationFilter || jobTypeFilter || companyFilter) && (
               <button
                 onClick={() => {
                   setLocationFilter('');
                   setJobTypeFilter('');
+                  setCompanyFilter('');
                 }}
                 className="w-full px-3 py-2 text-sm bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/40 rounded-md text-center text-green-800 dark:text-green-300"
               >
@@ -478,6 +512,21 @@ export default function Home() {
               </div>
             ) : (
               <div>
+                {companyFilter && (
+                  <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 p-4 rounded-md">
+                    <h3 className="font-medium flex items-center">
+                      <Building className="w-4 h-4 mr-2" />
+                      Showing jobs from {companyFilter}
+                    </h3>
+                    <button 
+                      onClick={() => setCompanyFilter('')}
+                      className="mt-2 text-sm underline"
+                    >
+                      Clear company filter
+                    </button>
+                  </div>
+                )}
+                
                 <div className="flex justify-between items-center mb-3">
                   <h2 className="text-lg font-semibold">
                     {activeFilter === 'new' ? 'Newest Jobs' : 
@@ -486,9 +535,20 @@ export default function Home() {
                   </h2>
                 </div>
 
-                {sortedJobs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 bg-card border border-border rounded-lg p-4">
-                    <p className="text-muted-foreground text-center text-sm">No jobs found matching your criteria.</p>
+                {displayedJobs.length === 0 ? (
+                  <div className="text-center py-12 bg-card border border-border rounded-lg">
+                    <p className="text-xl text-muted-foreground">No jobs found matching your criteria.</p>
+                    <button
+                      onClick={() => {
+                        setLocationFilter('');
+                        setJobTypeFilter('');
+                        setCompanyFilter('');
+                        setActiveFilter('new');
+                      }}
+                      className="mt-4 px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800"
+                    >
+                      Clear All Filters
+                    </button>
                   </div>
                 ) : (
                   <div>

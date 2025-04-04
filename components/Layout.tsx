@@ -77,7 +77,7 @@ export default function Layout({
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h2 className="font-mono text-xl font-semibold mb-4">gojobs.ng</h2>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-base text-muted-foreground mb-4">
                 {SITE_OWNER_BIO}
               </p>
               <div className="flex gap-4">
@@ -91,28 +91,31 @@ export default function Layout({
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Browse Jobs</h3>
-              <ul className="grid gap-2">
+              <h3 className="font-semibold text-lg mb-4">Browse Jobs</h3>
+              <ul className="grid gap-3">
                 <li>
-                  • <a href="/" onClick={(e) => handleFilterClick('new', e)} className="text-green-700 hover:underline cursor-pointer">New Jobs</a>
+                  • <a href="/" onClick={(e) => handleFilterClick('new', e)} className="text-green-700 hover:underline cursor-pointer text-base">New Jobs</a>
                 </li>
                 <li>
-                  • <a href="/?filter=remote" onClick={(e) => handleFilterClick('remote', e)} className="text-green-700 hover:underline cursor-pointer">Remote Jobs</a>
+                  • <a href="/?filter=remote" onClick={(e) => handleFilterClick('remote', e)} className="text-green-700 hover:underline cursor-pointer text-base">Remote Jobs</a>
+                </li>
+                <li>
+                  • <Link href="/companies" className="text-green-700 hover:underline cursor-pointer text-base">See Companies</Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">About</h3>
-              <ul className="grid gap-2">
+              <h3 className="font-semibold text-lg mb-4">About</h3>
+              <ul className="grid gap-3">
                 <li>
-                  • <span className="text-green-700">Created by {SITE_OWNER_NAME}</span>
+                  • <span className="text-green-700 text-base">Created by {SITE_OWNER_NAME}</span>
                 </li>
                 <li>
-                  • <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:underline">View on GitHub</a>
+                  • <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:underline text-base">View on GitHub</a>
                 </li>
                 <li>
-                  • <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:underline">Follow on LinkedIn</a>
+                  • <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:underline text-base">Follow on LinkedIn</a>
                 </li>
               </ul>
             </div>
@@ -120,10 +123,10 @@ export default function Layout({
 
           <div className="mt-8 pt-8 border-t border-border text-sm text-muted-foreground">
             <p>Content on this website is licensed under CC BY-SA 3.0.</p>
-            <p className="mt-2">© {new Date().getFullYear()} gojobs.ng. All rights reserved.</p>
+            <p className="mt-2"> {new Date().getFullYear()} gojobs.ng. All rights reserved.</p>
           </div>
         </div>
       </footer>
     </div>
   );
-} 
+}
