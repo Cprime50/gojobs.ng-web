@@ -1,7 +1,4 @@
-import { Job, RawJobData } from '../types/job';
-
-// Polling interval: 13 hours in milliseconds
-export const POLL_INTERVAL = 13 * 60 * 60 * 1000;
+import { Job } from '../types/job';
 
 // Cache structure
 interface CacheData {
@@ -9,8 +6,8 @@ interface CacheData {
   lastFetchTime: number;
 }
 
-// Get cached jobs - works on both client and server
-export function getCachedJobs(forceRefresh: boolean = false): { jobs: Job[] | null; expired: boolean } {
+// Get cached jobs - server side JSON file only
+export function getCachedJobs(): { jobs: Job[] | null } {
   // Server-side caching
   if (typeof window === 'undefined') {
     try {
@@ -20,52 +17,34 @@ export function getCachedJobs(forceRefresh: boolean = false): { jobs: Job[] | nu
       
       if (fs.existsSync(CACHE_FILE_PATH)) {
         const cacheData: CacheData = JSON.parse(fs.readFileSync(CACHE_FILE_PATH, 'utf8'));
-        const now = Date.now();
-        const expired = forceRefresh || (now - cacheData.lastFetchTime > POLL_INTERVAL);
-        
-        console.log(`Server cache: last fetch ${new Date(cacheData.lastFetchTime).toLocaleString()}, expired: ${expired}`);
-        return { jobs: cacheData.jobs, expired };
+        console.log(`Server cache: last fetch ${new Date(cacheData.lastFetchTime).toLocaleString()}`);
+        return { jobs: cacheData.jobs };
       }
     } catch (error) {
       console.error('Error reading cache file:', error);
     }
-    return { jobs: null, expired: true };
+    return { jobs: null };
   }
   
-  // Client-side caching
-  try {
-    const cacheData = localStorage.getItem('jobCache');
-    if (cacheData) {
-      const parsedCache = JSON.parse(cacheData);
-      const { jobs, lastFetchTime } = parsedCache;
-      const now = Date.now();
-      const expired = forceRefresh || (now - lastFetchTime > POLL_INTERVAL);
-      
-      console.log(`Client cache: last fetch ${new Date(lastFetchTime).toLocaleString()}, expired: ${expired}`);
-      return { jobs, expired };
-    }
-  } catch (error) {
-    console.error('Error accessing localStorage:', error);
-  }
-  
-  return { jobs: null, expired: true };
+  // For client-side, we'll use the API to get cached data
+  return { jobs: null };
 }
 
-// Set cached jobs - works on both client and server
+// Set cached jobs - only server-side JSON file
 export function setCachedJobs(jobs: Job[]): void {
   if (!jobs || !Array.isArray(jobs)) {
     console.error('Attempted to cache invalid jobs data:', jobs);
     return;
   }
   
-  const cacheData: CacheData = {
-    jobs,
-    lastFetchTime: Date.now()
-  };
-  
-  // Server-side caching
+  // Only allow server-side caching
   if (typeof window === 'undefined') {
     try {
+      const cacheData: CacheData = {
+        jobs,
+        lastFetchTime: Date.now()
+      };
+      
       const fs = require('fs');
       const path = require('path');
       const CACHE_FILE_PATH = path.join(process.cwd(), '.job-cache.json');
@@ -75,14 +54,5 @@ export function setCachedJobs(jobs: Job[]): void {
     } catch (error) {
       console.error('Error writing cache file:', error);
     }
-    return;
-  }
-  
-  // Client-side caching
-  try {
-    localStorage.setItem('jobCache', JSON.stringify(cacheData));
-    console.log(`Client cache updated with ${jobs.length} jobs at ${new Date().toLocaleString()}`);
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
   }
 }

@@ -1,43 +1,13 @@
 import { Job, RawJobData } from '../types/job';
-import { POLL_INTERVAL, getCachedJobs, setCachedJobs } from './cache';
+import { getCachedJobs } from './cache';
 
 // Internal API endpoint instead of direct external API access
-const INTERNAL_API_ENDPOINT = '/api/fetch-jobs';
+const INTERNAL_API_ENDPOINT = '/api/jobs';
 
-// Track if we're currently fetching to avoid duplicate requests
-let isCurrentlyFetching = false;
-let lastFetchAttempt = 0;
-
-// Main function to fetch and cache jobs
-export async function fetchJobsFromAPI(forceRefresh: boolean = false): Promise<Job[]> {
-  // Check existing cache
-  const cachedResult = getCachedJobs(forceRefresh);
-  
-  // If cached jobs exist and not expired, return them immediately
-  if (cachedResult.jobs && !cachedResult.expired) {
-    console.log('Using cached jobs (cache not expired)');
-    return cachedResult.jobs;
-  }
-  
-  // If we have cached jobs but it's a page refresh (not a forced refresh),
-  // return cached jobs first - no background refresh to avoid multiple requests
-  if (cachedResult.jobs && !forceRefresh) {
-    console.log('Using cached jobs');
-    return cachedResult.jobs;
-  }
-  
-  // If we're already fetching, don't start another fetch
-  if (isCurrentlyFetching) {
-    console.log('Fetch already in progress, returning cached jobs if available');
-    return cachedResult.jobs || [];
-  }
-
-  // Fetch fresh data from internal API
+// Main function to fetch jobs from API/cache
+export async function fetchJobsFromAPI(): Promise<Job[]> {
   try {
-    isCurrentlyFetching = true;
-    lastFetchAttempt = Date.now();
-    
-    console.log(`Fetching fresh jobs from internal API endpoint`);
+    console.log('Fetching jobs from server cache via API');
     const response = await fetch(INTERNAL_API_ENDPOINT, {
       cache: 'no-store'
     });
@@ -48,52 +18,15 @@ export async function fetchJobsFromAPI(forceRefresh: boolean = false): Promise<J
     
     const responseData = await response.json();
     
-    const freshJobs = responseData?.data && Array.isArray(responseData.data) 
+    const jobs = responseData?.data && Array.isArray(responseData.data) 
       ? responseData.data 
       : [];
     
-    // Process jobs 
-    const processedJobs = freshJobs.map((job: Job) => {
-      // Create a processed job object
-      const processedJob: Job = {
-        ...job,
-        tags: job.tags || []
-      };
-      
-      // Parse raw_data if needed
-      if (typeof job.raw_data === 'string' && job.raw_data) {
-        try {
-          const rawDataObj = JSON.parse(job.raw_data) as RawJobData;
-          
-          // If company_logo is not in the main object but in the raw_data, use it
-          if (!processedJob.company_logo && rawDataObj.company_logo) {
-            processedJob.company_logo = rawDataObj.company_logo;
-          }
-          
-          return {
-            ...processedJob,
-            rawDataParsed: rawDataObj
-          };
-        } catch (e) {
-          // Ignore parsing errors
-        }
-      }
-      
-      return processedJob;
-    });
-    
-    // Cache the processed jobs
-    setCachedJobs(processedJobs);
-    
-    console.log(`Fetched ${processedJobs.length} fresh jobs at ${new Date().toLocaleString()}`);
-    return processedJobs;
+    console.log(`Retrieved ${jobs.length} jobs from server cache`);
+    return jobs;
   } catch (error) {
     console.error('Error fetching jobs:', error);
-    
-    // If fetch fails, return cached jobs (if any)
-    return cachedResult.jobs || [];
-  } finally {
-    isCurrentlyFetching = false;
+    return [];
   }
 }
 
@@ -114,15 +47,29 @@ export function filterJobs(jobs: Job[], filters: { jobType?: string; location?: 
   });
 }
 
-// Clear cache function - fixed to avoid recursive calls
-export function clearJobsCache(): void {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.removeItem('jobCache');
-      console.log('Cache cleared');
-      // Explicitly NOT calling fetchJobsFromAPI here to avoid recursion
-    } catch (e) {
-      console.error('Error clearing cache:', e);
-    }
-  }
+// Clear cache function - only clears server-side JSON file
+export function clearJobsCache(): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Server-side only API call to clear cache
+    fetch('/api/clear-cache', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ clear: true }),
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('Server cache cleared via API');
+        resolve(true);
+      } else {
+        console.error('Failed to clear server cache');
+        resolve(false);
+      }
+    })
+    .catch(error => {
+      console.error('Error clearing cache:', error);
+      resolve(false);
+    });
+  });
 }
