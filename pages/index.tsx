@@ -93,7 +93,7 @@ export default function Home() {
   };
 
   // Fetch jobs data
-  const fetchJobs = async (forceRefresh: boolean = false) => {
+  const fetchJobs = async () => {
     try {
       // Only show loading spinner on initial load when we don't have data
       if (jobs.length === 0) {
@@ -101,13 +101,8 @@ export default function Home() {
       }
       setError(null);
       
-      // Log but don't spam the console
-      if (forceRefresh) {
-        console.log('Attempting to force refresh jobs data');
-      }
-      
       const startTime = Date.now();
-      const data = await fetchJobsFromAPI(forceRefresh);
+      const data = await fetchJobsFromAPI();
       const fetchDuration = Date.now() - startTime;
       
       // If fetch was fast, we likely used the cache
@@ -175,7 +170,7 @@ export default function Home() {
     
     console.log('Performing initial data fetch');
     // Don't force refresh on initial load - use cache if it's valid
-    fetchJobs(false);
+    fetchJobs();
   }, []);
 
   // Update URL when filters change

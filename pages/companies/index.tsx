@@ -27,7 +27,7 @@ export default function CompaniesPage({ initialCompanies }: CompaniesPageProps) 
       try {
         setLoading(true);
         // Use the existing fetchJobsFromAPI function which handles caching
-        const jobs = await fetchJobsFromAPI(false);
+        const jobs = await fetchJobsFromAPI();
         
         if (jobs && jobs.length > 0) {
           // Process companies data
