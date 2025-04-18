@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "refresh": "curl -X GET http://localhost:3000/api/refresh"
+    "refresh": "curl -X GET http://localhost:3000/api/refresh",
+    "clean-cache": "node scripts/clean-cache.js"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",
+    "@vercel/analytics": "^1.5.0",
     "cheerio": "^1.0.0",
     "dompurify": "^3.2.5",
     "lucide-react": "^0.483.0",

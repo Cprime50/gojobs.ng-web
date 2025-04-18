@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import crypto from 'crypto';
+import { filterNonEnglishJobs } from '../../utils/languageFilter';
 
 // Server-side environment variables (not exposed to the client)
 const API_URL = process.env.API_URL;
@@ -71,7 +72,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const data = await response.json();
     
-    // Return the data to the client
+    // Filter out non-English jobs if we have job data
+    if (data && data.data && Array.isArray(data.data)) {
+      const originalCount = data.data.length;
+      data.data = filterNonEnglishJobs(data.data);
+      
+      const filteredCount = originalCount - data.data.length;
+      if (filteredCount > 0) {
+        console.log(`Filtered out ${filteredCount} non-English jobs from API response`);
+      }
+    }
+    
+    // Return the filtered data to the client
     res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching jobs from external API:', error);

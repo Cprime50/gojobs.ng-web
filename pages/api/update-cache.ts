@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { setCachedJobs } from '../../utils/cache';
 import { Job } from '../../types/job';
+import { filterNonEnglishJobs } from '../../utils/languageFilter';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow POST requests
@@ -24,8 +25,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Invalid jobs data' });
     }
     
+    // Filter out non-English jobs
+    const originalCount = jobs.length;
+    const filteredJobs = filterNonEnglishJobs(jobs);
+    const filteredCount = originalCount - filteredJobs.length;
+    
+    if (filteredCount > 0) {
+      console.log(`Filtered out ${filteredCount} non-English jobs before caching`);
+    }
+    
     // Process and validate each job to ensure data integrity
-    const validatedJobs: Job[] = jobs.map(job => ({
+    const validatedJobs: Job[] = filteredJobs.map(job => ({
       ...job,
       // Ensure required fields exist
       id: job.id || '',
@@ -43,8 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     return res.status(200).json({ 
       success: true, 
-      message: `Cache updated with ${validatedJobs.length} jobs`,
-      count: validatedJobs.length
+      message: `Cache updated with ${validatedJobs.length} jobs (${filteredCount} non-English jobs removed)`,
+      count: validatedJobs.length,
+      filteredCount
     });
   } catch (error) {
     console.error('Error updating cache:', error);

@@ -15,14 +15,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('Manual trigger: Running scheduled job to update cache');
+    console.log('Manual trigger: Running scheduled job to update cache with language filtering');
     
     // Run the cache update job (this runs server-side)
     await fetchAndCacheJobs();
     
     return res.status(200).json({ 
       success: true, 
-      message: 'Cache update job completed',
+      message: 'Cache update job completed with language filtering',
       timestamp: new Date().toISOString()
     });
   } catch (error) {

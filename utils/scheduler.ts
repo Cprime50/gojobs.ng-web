@@ -1,4 +1,5 @@
 import { setCachedJobs } from './cache';
+import { filterNonEnglishJobs } from './languageFilter';
 
 // Constants for timezone (Lagos time - UTC+1)
 const LAGOS_TIMEZONE = 'Africa/Lagos';
@@ -144,17 +145,26 @@ export async function fetchAndCacheJobs(): Promise<void> {
     
     const responseData = await response.json();
     
-    const freshJobs = responseData?.data && Array.isArray(responseData.data) 
+    const jobs = responseData?.data && Array.isArray(responseData.data) 
       ? responseData.data 
       : [];
     
-    if (freshJobs.length > 0) {
-      console.log(`Scheduled fetch: Retrieved ${freshJobs.length} jobs. Updating cache.`);
+    if (jobs.length > 0) {
+      console.log(`Scheduled fetch: Retrieved ${jobs.length} jobs. Filtering and updating cache.`);
+      
+      // Filter out non-English jobs
+      const originalCount = jobs.length;
+      const filteredJobs = filterNonEnglishJobs(jobs);
+      const filteredCount = originalCount - filteredJobs.length;
+      
+      if (filteredCount > 0) {
+        console.log(`Filtered out ${filteredCount} non-English jobs from scheduled update`);
+      }
       
       // Update the cache with new jobs (server-side only)
       if (typeof window === 'undefined') {
-        setCachedJobs(freshJobs);
-        console.log(`Cache updated with ${freshJobs.length} jobs at ${new Date().toLocaleString('en-NG', { timeZone: LAGOS_TIMEZONE })}`);
+        setCachedJobs(filteredJobs);
+        console.log(`Cache updated with ${filteredJobs.length} jobs at ${new Date().toLocaleString('en-NG', { timeZone: LAGOS_TIMEZONE })}`);
       } else {
         // If client-side, call a special API endpoint to update the cache
         const cacheUpdateResponse = await fetch('/api/update-cache', {
@@ -163,13 +173,13 @@ export async function fetchAndCacheJobs(): Promise<void> {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ 
-            jobs: freshJobs,
+            jobs: filteredJobs,
             secret: process.env.NEXT_PUBLIC_CACHE_SECRET || ''
           }),
         });
         
         if (cacheUpdateResponse.ok) {
-          console.log(`Server cache updated via API with ${freshJobs.length} jobs`);
+          console.log(`Server cache updated via API with ${filteredJobs.length} jobs`);
         } else {
           console.error('Failed to update server cache via API');
         }
